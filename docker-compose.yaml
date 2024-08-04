@@ -1,0 +1,42 @@
+services:
+  app:
+    image: warehouse-app
+    container_name: warehouse-app
+    build:
+      dockerfile: ./docker/app/Dockerfile
+      context: .
+    volumes:
+      - .:/app:delegated
+    depends_on:
+      - pgsql
+  nginx:
+    image: warehouse-nginx
+    build:
+      dockerfile: ./docker/nginx/Dockerfile
+      context: .
+      args:
+        APP_IMAGE: warehouse-app
+    ports:
+      - "8047:80"
+    volumes:
+      - .:/app
+      - ./docker/nginx:/etc/nginx
+    depends_on:
+      - app
+  pgsql:
+    image: postgres:${PG_VERSION:-15}-alpine
+    environment:
+      POSTGRES_DB: ${PG_DB:-picker}
+      POSTGRES_PASSWORD: ${PG_PASSWORD:-picker}
+      POSTGRES_USER: ${PG_USER:-picker}
+      TZ: "Europe/Moscow"
+      PGTZ: "Europe/Moscow"
+      POSTGRES_HOST_AUTH_METHOD: "trust"
+    ports:
+      - "5433:5432"
+    volumes:
+      - ./docker/postgres:/docker-entrypoint-initdb.d
+      - database_data:/var/lib/postgresql/data
+
+volumes:
+  database_data:
