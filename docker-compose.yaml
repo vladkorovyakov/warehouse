@@ -17,7 +17,7 @@ services:
       args:
         APP_IMAGE: warehouse-app
     ports:
-      - "8047:80"
+      - "80:80"
     volumes:
       - .:/app
       - ./docker/nginx:/etc/nginx
@@ -33,7 +33,7 @@ services:
       PGTZ: "Europe/Moscow"
       POSTGRES_HOST_AUTH_METHOD: "trust"
     ports:
-      - "5433:5432"
+      - "5432:5432"
     volumes:
       - ./docker/postgres:/docker-entrypoint-initdb.d
       - database_data:/var/lib/postgresql/data
