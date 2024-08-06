@@ -7,6 +7,7 @@ use App\Model\DocumentTypes;
 use DateTimeImmutable;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use RuntimeException;
 
 /**
  * @extends ServiceEntityRepository<Documents>
@@ -84,5 +85,61 @@ class DocumentsRepository extends ServiceEntityRepository
             ->orderBy('doc.created', 'DESC')
             ->getQuery()
             ->getOneOrNullResult();
+    }
+
+    public function findLastDocumentForProductAndType(int $productId, string $type): ?Documents
+    {
+        return $this->createQueryBuilder('doc')
+            ->where('doc.productId = :productId')
+            ->andWhere('doc.type = :type')
+            ->orderBy('doc.created', 'DESC')
+            ->getQuery()
+            ->setParameter('productId', $productId)
+            ->setParameter('type', $type)
+            ->setMaxResults(1)
+            ->getOneOrNullResult();
+    }
+
+    public function isLatestValueForProduct(int $productId, DateTimeImmutable $documentDate): bool
+    {
+        $document = $this->createQueryBuilder('doc')
+            ->where('doc.productId = :productId')
+            ->andWhere('doc.created >= :documentDate')
+            ->setParameter('productId', $productId)
+            ->setParameter('documentDate', $documentDate->format('Y-m-d H:i:s'))
+            ->getQuery()
+            ->setMaxResults(1)
+            ->getOneOrNullResult();
+        return $document === null;
+    }
+
+    /**
+     * @param int $productId
+     * @param DateTimeImmutable $date
+     * @return Documents[]
+     */
+    public function findAllDocumentForProductWithDate(int $productId, DateTimeImmutable $date): array
+    {
+        $previousDocument = $this->createQueryBuilder('doc')
+            ->where('doc.productId = :productId')
+            ->andWhere('doc.created < :getStartDate')
+            ->setParameter('productId', $productId)
+            ->setParameter('getStartDate', $date->format('Y-m-d H:i:s'))
+            ->orderBy('doc.created', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+        if ($previousDocument === null) {
+            throw new RuntimeException('Previous document not found, after date ' . $date->format('HY-m-d H:i:s'));
+        }
+
+        return $this->createQueryBuilder('doc')
+            ->where('doc.productId = :productId')
+            ->andWhere('doc.created >= :startDate')
+            ->setParameter('productId', $productId)
+            ->setParameter('startDate', $previousDocument->getCreated()->format('Y-m-d H:i:s'))
+            ->orderBy('doc.created', 'ASC')
+            ->getQuery()
+            ->getResult();
     }
 }

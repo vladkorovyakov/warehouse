@@ -6,11 +6,12 @@ use App\Model\DocumentDto;
 use App\Model\HistoryDto;
 use App\Model\InventoryDto;
 use App\Service\ApiSerializer;
-use App\Service\Document\DocumentServiceInterface;
+use App\Service\Document\DocumentService;
+use App\Service\History\HistoryService;
 use App\Service\History\HistoryStreamer;
-use App\Service\History\HistoryServiceInterface;
-use App\Service\InventoryService\InventoryServiceInterface;
+use App\Service\InventoryService\InventoryService;
 use DateTimeImmutable;
+use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use RuntimeException;
@@ -25,8 +26,8 @@ use Throwable;
 final class ProductsController extends AbstractController
 {
     public function __construct(
-        private readonly HistoryServiceInterface   $historyService,
-        private readonly InventoryServiceInterface $inventoryService,
+        private readonly HistoryService   $historyService,
+        private readonly InventoryService $inventoryService, private readonly EntityManagerInterface $entityManager,
     ) {
     }
 
@@ -46,7 +47,7 @@ final class ProductsController extends AbstractController
         ],
     )
     ]
-    public function addDocument(Request $request, DocumentServiceInterface $documentService): JsonResponse
+    public function addDocument(Request $request, DocumentService $documentService): JsonResponse
     {
         try {
             $serializer = new ApiSerializer();
@@ -82,7 +83,8 @@ final class ProductsController extends AbstractController
         return new StreamedResponse(
             new HistoryStreamer(
                 $this->historyService->getAllDocuments(),
-                $this->historyService->getDocumentsQuantity()
+                $this->historyService->getDocumentsQuantity(),
+                $this->entityManager,
             ),
             200,
             ['Content-Type' => 'application/json'],
@@ -99,6 +101,7 @@ final class ProductsController extends AbstractController
                 name    : 'date',
                 in      : 'path',
                 required: true,
+                example: '2024-11-05'
             ),
         ],
         responses : [

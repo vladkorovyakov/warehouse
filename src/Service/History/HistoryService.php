@@ -7,7 +7,7 @@ namespace App\Service\History;
 use App\Entity\Documents;
 use Doctrine\ORM\EntityManagerInterface;
 
-final readonly class HistoryService implements HistoryServiceInterface
+final readonly class HistoryService
 {
     public function __construct(private EntityManagerInterface $entityManager)
     {

@@ -35,6 +35,9 @@ class Documents
     #[ORM\OneToOne(mappedBy: 'document', cascade: ['persist', 'remove'])]
     private ?PricePerProduct $pricePerProduct = null;
 
+    #[ORM\Column(options: ['default' => 0])]
+    private ?int $current_remainder = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -118,6 +121,18 @@ class Documents
         }
 
         $this->pricePerProduct = $pricePerProduct;
+
+        return $this;
+    }
+
+    public function getCurrentRemainder(): ?int
+    {
+        return $this->current_remainder;
+    }
+
+    public function setCurrentRemainder(int $current_remainder): static
+    {
+        $this->current_remainder = $current_remainder;
 
         return $this;
     }

@@ -15,4 +15,13 @@ class InventoryErrorsRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, InventoryErrors::class);
     }
+
+    public function findByDocumentId(int $productId): ?InventoryErrors
+    {
+        return $this->createQueryBuilder('ie')
+            ->where('ie.document = :documentId')
+            ->setParameter('documentId', $productId)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
 }

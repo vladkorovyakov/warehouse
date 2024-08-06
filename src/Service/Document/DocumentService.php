@@ -6,7 +6,7 @@ namespace App\Service\Document;
 use App\Model\DocumentDto;
 use Exception;
 
-final readonly class DocumentService implements DocumentServiceInterface
+final readonly class DocumentService
 {
     public function __construct(private DocumentSaverFactory $documentSaverFactory)
     {

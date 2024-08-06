@@ -5,6 +5,7 @@ services:
     build:
       dockerfile: ./docker/app/Dockerfile
       context: .
+    env_file: .env
     volumes:
       - .:/app:delegated
     depends_on:
@@ -16,6 +17,7 @@ services:
       context: .
       args:
         APP_IMAGE: warehouse-app
+    env_file: .env
     ports:
       - "80:80"
     volumes:
@@ -25,6 +27,7 @@ services:
       - app
   pgsql:
     image: postgres:${PG_VERSION:-15}-alpine
+    env_file: .env
     environment:
       POSTGRES_DB: ${PG_DB:-picker}
       POSTGRES_PASSWORD: ${PG_PASSWORD:-picker}

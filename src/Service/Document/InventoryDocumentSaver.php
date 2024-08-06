@@ -27,19 +27,9 @@ final class InventoryDocumentSaver extends AbstractDocumentSaver
         return $document;
     }
 
-    protected function countNewRemainder(int $productId, int $quantity): void
+    protected function countNewRemainder(int $productId, int $quantity): int
     {
-        $lastRemainder = $this->entityManager
-            ->getRepository(ProductRemainder::class)
-            ->findRemainderByProductId($productId);
-
-        if ($lastRemainder === null) {
-            $lastRemainder = new ProductRemainder();
-            $lastRemainder->setProductId($productId);
-        }
-
-        $lastRemainder->setValue($quantity);
-        $this->entityManager->persist($lastRemainder);
+        return $quantity;
     }
 
     private function countInventoryError(int $productId, int $newRemainderValue): int

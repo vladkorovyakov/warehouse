@@ -14,9 +14,11 @@
         "nelmio/api-doc-bundle": "^4.29",
         "symfony/asset": "7.1.*",
         "symfony/console": "7.1.*",
+        "symfony/doctrine-messenger": "7.1.*",
         "symfony/dotenv": "7.1.*",
         "symfony/flex": "^2",
         "symfony/framework-bundle": "7.1.*",
+        "symfony/messenger": "7.1.*",
         "symfony/property-access": "7.1.*",
         "symfony/runtime": "7.1.*",
         "symfony/serializer": "7.1.*",
@@ -72,7 +74,6 @@
         }
     },
     "require-dev": {
-        "symfony/maker-bundle": "^1.60",
-        "symplify/config-transformer": "^12.3"
+        "symfony/maker-bundle": "^1.60"
     }
 }

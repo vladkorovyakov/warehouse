@@ -4,20 +4,23 @@ declare(strict_types=1);
 
 namespace App\Service\History;
 
-use App\Model\DocumentTypes;
 use App\Model\HistoryDto;
 use App\Model\HistoryItemDto;
 use App\Service\ApiSerializer;
+use App\Service\Remainder\RemainderService;
+use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use JsonException;
-use RuntimeException;
 
 final readonly class HistoryStreamer
 {
     private const REPLACE = '__DOCUMENTS__';
 
-    public function __construct(private iterable $documents, private int $documentsQuantity)
-    {
+    public function __construct(
+        private iterable $documents,
+        private int $documentsQuantity,
+        private EntityManagerInterface $entityManager,
+    ) {
     }
 
     /**
@@ -26,6 +29,8 @@ final readonly class HistoryStreamer
      */
     public function __invoke(): void
     {
+        $remainderService = new RemainderService($this->entityManager);
+
         [$before, $after] = explode('"' . self::REPLACE . '"', $this->buildJSONStructure(), 2);
 
         echo $before;
@@ -63,7 +68,10 @@ final readonly class HistoryStreamer
                              ],
                 );
             } else {
-                $remainder = $this->countRemainder($document['type'], $remainder, $document['value']);
+                $remainder = $remainderService
+                    ->countByDocumentType($document['type'], $remainder, $document['value']);
+
+
                 $productData->history [] = new HistoryItemDto(
                     type          : $document['type'],
                     timestamp     : $document['created']->format(DATE_ATOM),
@@ -97,15 +105,4 @@ final readonly class HistoryStreamer
             JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE,
         );
     }
-
-    private function countRemainder(string $operationType, int $currentRemainder, int $value): int
-    {
-        return match ($operationType) {
-            DocumentTypes::DOCUMENT_RECEIPT_TYPE   => $currentRemainder + $value,
-            DocumentTypes::DOCUMENT_EXPENSE_TYPE   => $currentRemainder - $value,
-            DocumentTypes::DOCUMENT_INVENTORY_TYPE => $value,
-            default => throw new RuntimeException('Operation type not found'),
-        };
-    }
-
 }

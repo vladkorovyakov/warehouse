@@ -11,7 +11,7 @@ RUN apt -q update && apt install -qy apt-transport-https lsb-release ca-certific
 RUN curl -o /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg
 RUN sh -c 'echo "deb https://ftp.mpi-inf.mpg.de/mirrors/linux/mirror/deb.sury.org/repositories/php/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/php.list'
 RUN apt -q update
-RUN apt install -qy --no-install-recommends \
+RUN apt install -qy --no-install-recommends tini supervisor \
     php${PHP_VERSION}-fpm php${PHP_VERSION}-cli php${PHP_VERSION}-xml php${PHP_VERSION}-intl php${PHP_VERSION}-curl \
     php${PHP_VERSION}-bcmath php${PHP_VERSION}-mbstring php${PHP_VERSION}-readline php${PHP_VERSION}-zip \
     php${PHP_VERSION}-pgsql php${PHP_VERSION}-igbinary php${PHP_VERSION}-iconv php${PHP_VERSION}-gd \
@@ -27,6 +27,7 @@ RUN groupadd -g ${USER_ID} nginx && \
     chown -R nginx:nginx /home/nginx /app
 
 COPY ./docker/app/php/ /etc/php/${PHP_VERSION}/
+COPY ./docker/app/supervisor/ /etc/supervisor/
 COPY ./docker/app/app-entrypoint.sh /app-entrypoint.sh
 
 RUN chmod +x /app-entrypoint.sh
@@ -50,6 +51,9 @@ RUN set -eux; \
     fi \
     && chown -R nginx:nginx *
 
+RUN chmod +x /app-entrypoint.sh
+
 EXPOSE 9000
 
+ENTRYPOINT ["tini", "--", "/app-entrypoint.sh"]
 CMD ["php-fpm8.2", "-F"]

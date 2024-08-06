@@ -4,8 +4,8 @@ set -e
 APP_DIR="${APP_DIR:-/app}";
 
 STARTUP_CLEAR_CACHE="${STARTUP_CLEAR_CACHE:-false}"
-
-/app/docker/wait-for "${POSTGRES_HOST}":"${POSTGRES_PORT}" -t 240 -- echo "PostgreSQL is ready."
+STARTUP_START_CONSUMERS="${STARTUP_START_CONSUMERS:-true}"
+STARTUP_START_SUPERVISORD="${STARTUP_START_SUPERVISORD:-true}"
 
 if [ "${STARTUP_CLEAR_CACHE}" = "true" ]; then
     echo "[INFO] Starting cache cleanup";
@@ -16,6 +16,18 @@ if [ "${STARTUP_CLEAR_CACHE}" = "true" ]; then
     php bin/console cache:pool:clear doctrine.result_cache_pool;
     php bin/console cache:pool:clear doctrine.system_cache_pool;
     echo "[INFO] Cache cleanup is completed";
+fi;
+
+if [ "${STARTUP_START_SUPERVISORD}" = "true" ]; then
+    echo "[INFO] Start supervisord";
+    /usr/bin/supervisord -c /etc/supervisor/supervisord.conf;
+    echo "[INFO] Start supervisord finished";
+fi;
+
+if [ "${STARTUP_START_CONSUMERS}" = "true" ]; then
+    echo "[INFO] Start consumers process";
+    /usr/bin/supervisorctl start message-workers:*;
+    echo "[INFO] Start consumers process finished";
 fi;
 
 exec "$@";

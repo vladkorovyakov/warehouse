@@ -12,6 +12,8 @@
 4. При необходимости в .env изменить NGINX_SERVER_NAME
 5. `docker compose up -d`
 6. `docker compose run app composer install`
+7. `docker compose run app bin/console docktrine:migration:diff`
+8. `docker compose run app bin/console docktrine:migration:migrate`
 
 ## API 
 

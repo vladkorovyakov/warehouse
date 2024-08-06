@@ -12,7 +12,7 @@ use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use RuntimeException;
 
-final readonly class InventoryService implements InventoryServiceInterface
+final readonly class InventoryService
 {
     public function __construct(private EntityManagerInterface $entityManager)
     {
