@@ -31,7 +31,7 @@ final class RecipeDocumentSaver extends AbstractDocumentSaver
     {
         $lastDocument = $this->entityManager
             ->getRepository(Documents::class)
-            ->findLastDocumentForProductAndType($productId, $this->getType());
+            ->findLastDocumentForProduct($productId, $this->getType());
 
         return ($lastDocument?->getCurrentRemainder() ?? 0) + $quantity;
     }

@@ -27,6 +27,7 @@ final readonly class RecountRemainderService
             ->findAllDocumentForProductWithDate($recount->getProductId(), $recount->getStartDate());
 
         $remainder = 0;
+        $totalDocumentsQuantity = count($documentsForRecount);
         foreach ($documentsForRecount as $counter => $document) {
 
             if ($counter === 0) {
@@ -36,8 +37,7 @@ final readonly class RecountRemainderService
                     ->countByDocumentType($document->getType(), $remainder, $document->getValue());
 
                 $document->setCurrentRemainder($newRemainder);
-                $this->entityManager->persist($document);
-                $this->entityManager->flush();
+//                $this->entityManager->persist($document);
 
                 echo 'id:'.$document->getId().' oldRemainder:'.  $remainder.' newRemainder:'.$newRemainder.PHP_EOL;
 
@@ -46,10 +46,15 @@ final readonly class RecountRemainderService
                 }
 
                 $remainder = $newRemainder;
+
+                if ($counter % 500 === 0 || $counter === $totalDocumentsQuantity) {
+                    $this->entityManager->flush();
+                }
             }
 
             $this->remainderService->updateProductRemainder($document->getProductId(), $remainder);
         }
+
     }
 
     private function recountInventoryError(int $documentId, int $documentValue, int $remainder): void

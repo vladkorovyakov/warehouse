@@ -87,15 +87,13 @@ class DocumentsRepository extends ServiceEntityRepository
             ->getOneOrNullResult();
     }
 
-    public function findLastDocumentForProductAndType(int $productId, string $type): ?Documents
+    public function findLastDocumentForProduct(int $productId): ?Documents
     {
         return $this->createQueryBuilder('doc')
             ->where('doc.productId = :productId')
-            ->andWhere('doc.type = :type')
             ->orderBy('doc.created', 'DESC')
             ->getQuery()
             ->setParameter('productId', $productId)
-            ->setParameter('type', $type)
             ->setMaxResults(1)
             ->getOneOrNullResult();
     }

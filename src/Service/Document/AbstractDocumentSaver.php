@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Service\Document;
 
 use App\Entity\Documents;
+use App\Entity\ProductRemainder;
 use App\Messenger\Recount;
 use App\Model\ProductsDto;
 use App\Service\Remainder\RemainderService;
@@ -32,7 +33,12 @@ abstract class AbstractDocumentSaver implements DocumentSaverInterface
     {
         foreach ($products as $product) {
             $documentDate = new DateTimeImmutable($product->timestamp);
-            $currentRemainder = $this->countNewRemainder($product->productId, $product->quantity);
+            $currentRemainder = $this->remainderService
+                ->countByDocumentType(
+                    $this->getType(),
+                    $this->getLastRemainderForProduct($product->productId),
+                    $product->quantity
+                );
             $isMedianTimestamp = $this->isMedianTimestampForProduct($product->productId, $documentDate);
 
             $document = new Documents();
@@ -75,5 +81,13 @@ abstract class AbstractDocumentSaver implements DocumentSaverInterface
     {
         $documentRepository = $this->entityManager->getRepository(Documents::class);
         return !$documentRepository->isLatestValueForProduct($productId, $documentDate);
+    }
+
+    private function getLastRemainderForProduct(int $productId): int
+    {
+        return $this->entityManager
+            ->getRepository(ProductRemainder::class)
+            ->findRemainderByProductId($productId)
+            ?->getValue() ?? 0;
     }
 }
